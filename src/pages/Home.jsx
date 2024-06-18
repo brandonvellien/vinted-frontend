@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
-const Home = () => {
+const Home = ({ search }) => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -10,7 +12,7 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://lereacteur-vinted-api.herokuapp.com/v2/offers"
+          `https://lereacteur-vinted-api.herokuapp.com/v2/offers?title=${search}`
         );
         setData(response.data);
         setIsLoading(false);
@@ -19,42 +21,43 @@ const Home = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [search]);
 
   return (
-    <main>
-      <section>
-        <h1>Page Home</h1>
-        <div className="header-container">
-          <img src="" alt="" />
-          <div className="home-ready">
-            <h1>Prêts à faire du tri dans vos placards?</h1>
-            <button>Commencer à vendre</button>
-          </div>
-        </div>
-        <div className="home-card">
-          {!isLoading &&
-            data &&
-            data.offers.map((article) => (
-              <Link to={`/offers/${article._id}`} key={article._id}>
-                <article key={article._id}>
-                  <div className="card-container">
-                    <div>{article.owner.account.username}</div>
-                    <div className="card-image">
-                      <img
-                        src={article.product_image.secure_url}
-                        alt={article.product_name}
-                      />
-                    </div>
-                    <p>{article.product_price} €</p>
-                    <p>{article.product_details[1]?.TAILLE}</p>
-                    <p>{article.product_details[0]?.MARQUE}</p>
+    <main className="home-container">
+      <div className="home-card">
+        {!isLoading &&
+          data &&
+          data.offers.map((article) => (
+            <Link to={`/offers/${article._id}`} key={article._id}>
+              <div key={article._id} className="card-container">
+                <div className="card-avatar-username">
+                  <img
+                    src={article.owner.account.avatar?.secure_url}
+                    alt={article.owner.account.username}
+                  />
+                  <span>{article.owner.account.username}</span>
+                </div>
+
+                <img
+                  className="w-full  h-80 object-cover"
+                  src={article.product_image.secure_url}
+                  alt={article.product_name}
+                />
+
+                <div className="image-infos">
+                  <div className="price-size-brand">
+                    <span>{article.product_price} €</span>
+
+                    <span>{article.product_details[1]?.TAILLE}</span>
+
+                    <span>{article.product_details[0]?.MARQUE}</span>
                   </div>
-                </article>
-              </Link>
-            ))}
-        </div>
-      </section>
+                </div>
+              </div>
+            </Link>
+          ))}
+      </div>
     </main>
   );
 };
